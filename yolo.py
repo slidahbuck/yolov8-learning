@@ -81,7 +81,6 @@ def extract_embedding(crop, resnet_model, device):
 
 
 
-
 # --- 3A: def extract_embedding(crop, resnet_model, device) ---
 #
 # PURPOSE: Takes a single car crop image and returns a 2048-number fingerprint.
@@ -157,7 +156,15 @@ def extract_embedding(crop, resnet_model, device):
 #     # Final result: a 1D array of 2048 floats -- the car's fingerprint
 #
 # LEARN MORE: https://pytorch.org/vision/stable/transforms.html
- 
+
+def get_average_embedding(crops, resnet_model, device):
+    embeddings = [extract_embedding(crop, resnet_model, device) for crop in crops]
+    stacked = np.stack(embeddings)
+    averaged = np.mean(stacked, axis=0)
+    norm = np.linalg.norm(averaged)
+    normalized = averaged / norm
+    return normalized
+
  
 # --- 3B: def get_average_embedding(crops, resnet_model, device) ---
 #
@@ -200,6 +207,15 @@ def extract_embedding(crop, resnet_model, device):
 #   Step 4 -- Return the normalized embedding:
 #     return normalized
  
+def get_vehicle_crop(frame, box):
+    x1, y1, x2, y2 = int(box[0]), int(box[1]), int(box[2]), int(box[3])
+    pad = 10
+    x1 = max(0, x1 - pad)
+    y1 = max(0, y1 - pad)
+    x2 = min(frame.shape[1], x2 + pad)
+    y2 = min(frame.shape[0], y2 + pad)
+    crop = frame[y1:y2, x1:x2]
+    return crop
  
 # --- 3C: def get_vehicle_crop(frame, box) ---
 #
